@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:KvmDesktop.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+             x:Class="KvmDesktop.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+    
+    <Border Background="{DynamicResource SystemAltLowColor}" 
+            CornerRadius="8" 
+            Padding="30" 
+            VerticalAlignment="Center" 
+            HorizontalAlignment="Center"
+            MaxWidth="350">
+        <StackPanel Spacing="15">
+            <TextBlock Text="KVM Launcher" 
+                       FontSize="24" 
+                       FontWeight="SemiBold" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,20"/>
+
+            <TextBox Text="{Binding Username}" 
+                     Watermark="Username" 
+                     IsEnabled="{Binding !IsBusy}"/>
+
+            <TextBox Text="{Binding Password}" 
+                     Watermark="Password" 
+                     PasswordChar="*" 
+                     IsEnabled="{Binding !IsBusy}"/>
+
+            <CheckBox Content="Remember Me" 
+                      IsChecked="{Binding RememberMe}" 
+                      IsEnabled="{Binding !IsBusy}"/>
+
+            <Button Command="{Binding LoginCommand}" 
+                    Content="Login" 
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Center"
+                    IsDefault="True"
+                    IsEnabled="{Binding !IsBusy}"/>
+
+            <ProgressBar IsIndeterminate="True" 
+                         IsVisible="{Binding IsBusy}" 
+                         Height="2"/>
+
+            <TextBlock Text="{Binding ErrorMessage}" 
+                       Foreground="Red" 
+                       FontSize="12" 
+                       HorizontalAlignment="Center"
+                       IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+        </StackPanel>
+    </Border>
+</UserControl>

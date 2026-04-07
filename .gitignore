@@ -1,0 +1,63 @@
+## ---------- .NET / C# Specific ----------
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bin/
+obj/
+
+# NuGet Packages
+*.nupkg
+# The packages folder can be restored, so we don't commit it
+packages/
+# Modern .NET uses a global cache, but sometimes a local 'restore' exists
+.nuget/
+
+# MSBuild / Visual Studio / JetBrains Rider cache
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vsCode/
+
+## ---------- Avalonia Specific ----------
+# Generated files by Avalonia.NameGenerator or other source generators
+*.g.cs
+
+## ---------- C++ / Native Client Specific ----------
+# Compiled Object files
+*.o
+*.obj
+*.out
+
+# Executables (we want to commit the source, not the build)
+control_app
+control_app.exe
+
+# CMake build directories (if you use CMake for C++)
+CMakeSettings.json
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+
+## ---------- User Secrets & OS Specific ----------
+# Local configuration files that might contain tokens
+*.local.json
+.env
+user_session.json
+preferences.json
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+## ---------- Project Specific ----------
+# If you have logs during development
+*.log
+
+## ---------- DOCS ----------
+docs/
