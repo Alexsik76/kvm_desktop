@@ -29,10 +29,32 @@ public class KvmLauncherService : IKvmLauncherService
                 Arguments = arguments,
                 WorkingDirectory = workingDirectory,
                 UseShellExecute = false,
-                CreateNoWindow = false
+                CreateNoWindow = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             };
 
-            Process.Start(startInfo);
+            Process process = new Process { StartInfo = startInfo };
+            
+            process.OutputDataReceived += (s, e) => 
+            {
+                if (e.Data != null)
+                {
+                    Debug.WriteLine($"[KVMControlApp] {e.Data}");
+                }
+            };
+            
+            process.ErrorDataReceived += (s, e) => 
+            {
+                if (e.Data != null)
+                {
+                    Debug.WriteLine($"[KVMControlApp Error] {e.Data}");
+                }
+            };
+
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
         }
         catch (Exception ex)
         {
