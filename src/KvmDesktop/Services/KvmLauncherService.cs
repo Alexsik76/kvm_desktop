@@ -8,23 +8,26 @@ namespace KvmDesktop.Services;
 
 public class KvmLauncherService : IKvmLauncherService
 {
-    public Task LaunchNodeAsync(KvmNode node, string token)
+    public Task LaunchNodeAsync(KvmNode node, string pipeName)
     {
         string executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) 
-            ? "control_app.exe" 
-            : "control_app";
+            ? "KVMControlApp.exe" 
+            : "KVMControlApp";
 
-        // Construct arguments: control_app --stream <video_url> --hid <hid_url> --token <jwt_token>
-        // Note: Using the URLs from the node model. 
-        // Based on README_API, stream_url and hid_url are provided by the API.
-        string arguments = $"--stream \"{node.StreamUrl}\" --hid \"{node.HidUrl}\" --token \"{token}\"";
+        // Construct arguments: KVMControlApp --pipe <pipe_name>
+        string arguments = $"--pipe \"{pipeName}\"";
 
         try
         {
+            // Set the absolute path to the physical executable to avoid working directory issues with symbolic links
+            string executablePath = @"D:\diplom\control_app\build\Debug\KVMControlApp.exe";
+            string workingDirectory = @"D:\diplom\control_app\build\Debug\";
+
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
-                FileName = executableName,
+                FileName = executablePath,
                 Arguments = arguments,
+                WorkingDirectory = workingDirectory,
                 UseShellExecute = false,
                 CreateNoWindow = false
             };

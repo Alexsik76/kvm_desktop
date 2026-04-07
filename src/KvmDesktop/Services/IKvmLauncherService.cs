@@ -8,5 +8,5 @@ namespace KvmDesktop.Services;
 /// </summary>
 public interface IKvmLauncherService
 {
-    Task LaunchNodeAsync(KvmNode node, string token);
+    Task LaunchNodeAsync(KvmNode node, string pipeName);
 }

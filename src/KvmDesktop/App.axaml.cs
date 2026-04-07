@@ -59,6 +59,7 @@ public partial class App : Application
 
         // Services
         services.AddSingleton<IKvmLauncherService, KvmLauncherService>();
+        services.AddSingleton<IPipeServerService, PipeServerService>();
 
         // ViewModels
         services.AddSingleton<MainWindowViewModel>();
