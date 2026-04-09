@@ -19,9 +19,10 @@ public class KvmLauncherService : IKvmLauncherService
 
         try
         {
-            // Set the absolute path to the physical executable to avoid working directory issues with symbolic links
-            string executablePath = @"D:\diplom\control_app\build\Debug\KVMControlApp.exe";
-            string workingDirectory = @"D:\diplom\control_app\build\Debug\";
+            // Navigate from bin/Debug/net10.0 up to the root 'app' folder, then into control_app/build/Debug
+            string baseDir = AppContext.BaseDirectory;
+            string workingDirectory = System.IO.Path.GetFullPath(System.IO.Path.Combine(baseDir, "..", "..", "..", "..", "..", "..", "control_app", "build", "Debug"));
+            string executablePath = System.IO.Path.Combine(workingDirectory, executableName);
 
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
