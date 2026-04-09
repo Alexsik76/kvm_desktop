@@ -16,6 +16,12 @@ public class KvmNode
     [JsonPropertyName("status")]
     public string Status { get; set; } = string.Empty;
 
+    [JsonPropertyName("tunnel_url")]
+    public string TunnelUrl { get; set; } = string.Empty;
+
+    [JsonPropertyName("internal_ip")]
+    public string InternalIp { get; set; } = string.Empty;
+
     [JsonPropertyName("stream_url")]
     public string StreamUrl { get; set; } = string.Empty;
 

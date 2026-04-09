@@ -119,10 +119,24 @@ public partial class DashboardViewModel : ViewModelBase
                 // ... (решта коду)
                 Console.WriteLine("[DashboardVM] Building and sending handshake...");
 
-                // Ensure URLs are populated even if API didn't return them in the list
-                string hidUrl = string.IsNullOrEmpty(targetNode.HidUrl) 
-                    ? $"wss://kvm-api.lab.vn.ua/api/v1/nodes/{targetNode.Id}/ws" 
-                    : targetNode.HidUrl;
+                string nodeDomain = "";
+                if (!string.IsNullOrEmpty(targetNode.TunnelUrl))
+                {
+                    if (Uri.TryCreate(targetNode.TunnelUrl, UriKind.Absolute, out Uri tunnelUri))
+                    {
+                        nodeDomain = tunnelUri.Host;
+                    }
+                    else
+                    {
+                        nodeDomain = targetNode.TunnelUrl.Replace("https://", "").Replace("http://", "");
+                    }
+                }
+                else if (!string.IsNullOrEmpty(targetNode.InternalIp))
+                {
+                    nodeDomain = targetNode.InternalIp;
+                }
+
+                string hidUrl = $"wss://{nodeDomain}/ws/control";
 
                 string streamUrl = string.IsNullOrEmpty(targetNode.StreamUrl) 
                     ? $"https://kvm-api.lab.vn.ua/api/v1/nodes/{targetNode.Id}/signal/offer" 
