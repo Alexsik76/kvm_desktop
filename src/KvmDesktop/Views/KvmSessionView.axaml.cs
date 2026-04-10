@@ -35,16 +35,13 @@ public partial class KvmSessionView : UserControl
                     vm.ToggleCapture();
                 }
             }
-            else if (e.Key == Key.LeftAlt || e.Key == Key.RightAlt)
+            else if (e.Key == Key.P && e.KeyModifiers.HasFlag(KeyModifiers.Alt))
             {
-                if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
+                // Alt + P release capture
+                if (DataContext is KvmSessionViewModel vm)
                 {
-                    // Ctrl + Alt release
-                    if (DataContext is KvmSessionViewModel vm)
-                    {
-                        vm._inputCapturer.IsEnabled = false;
-                        vm.Overlay.IsMouseCaptured = false;
-                    }
+                    vm._inputCapturer.IsEnabled = false;
+                    vm.Overlay.IsMouseCaptured = false;
                 }
             }
         };
