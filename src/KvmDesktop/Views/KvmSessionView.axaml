@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:KvmDesktop.ViewModels"
+             xmlns:views="using:KvmDesktop.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="KvmDesktop.Views.KvmSessionView"
+             x:DataType="vm:KvmSessionViewModel"
+             Focusable="True">
+    
+    <Grid>
+        <!-- Video Rendering Area -->
+        <Panel Background="Black">
+            <Image Source="{Binding VideoBitmap}" 
+                   Stretch="Uniform"
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Stretch"/>
+        </Panel>
+        
+        <!-- Overlay -->
+        <views:KvmOverlayView DataContext="{Binding Overlay}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"/>
+        
+        <!-- Controls for debugging/testing if needed -->
+        <Button Command="{Binding ToggleCaptureCommand}"
+                VerticalAlignment="Bottom" 
+                HorizontalAlignment="Right"
+                Margin="10"
+                Content="Capture (F11)"
+                Opacity="0.5"/>
+    </Grid>
+</UserControl>

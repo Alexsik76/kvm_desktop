@@ -106,14 +106,14 @@ public class PipeServerService : IPipeServerService
             try
             {
                 string? line = await reader.ReadLineAsync(token);
-                if (string.IsNullOrEmpty(line))
+                if (line == null)
                 {
-                    // Empty line or end of stream
-                    if (reader.EndOfStream)
-                    {
-                        Console.WriteLine("[PipeServer] End of stream reached (Client disconnected).");
-                        break;
-                    }
+                    Console.WriteLine("[PipeServer] End of stream reached (Client disconnected).");
+                    break;
+                }
+
+                if (string.IsNullOrWhiteSpace(line))
+                {
                     continue;
                 }
 

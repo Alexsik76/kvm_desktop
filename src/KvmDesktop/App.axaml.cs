@@ -60,6 +60,9 @@ public partial class App : Application
         // Services
         services.AddSingleton<IKvmLauncherService, KvmLauncherService>();
         services.AddSingleton<IPipeServerService, PipeServerService>();
+        services.AddSingleton<IHidClient, WebSocketHidClient>();
+        services.AddSingleton<IEventMapper, AvaloniaEventMapper>();
+        services.AddSingleton<IInputCapturer, InputCapturer>();
 
         // ViewModels
         services.AddSingleton<MainWindowViewModel>();

@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:KvmDesktop.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="KvmDesktop.Views.KvmOverlayView"
+             x:DataType="vm:KvmOverlayViewModel"
+             IsHitTestVisible="False">
+    
+    <Grid>
+        <!-- Top bar status info -->
+        <Border VerticalAlignment="Top" 
+                HorizontalAlignment="Center"
+                Background="#AA000000" 
+                CornerRadius="0,0,10,10"
+                Padding="15,5">
+            <StackPanel Orientation="Horizontal" Spacing="20">
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Ellipse Width="10" Height="10" 
+                             Fill="{Binding IsVideoConnected, Converter={StaticResource BoolToColorConverter}}" />
+                    <TextBlock Text="Video" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal" Spacing="5">
+                    <Ellipse Width="10" Height="10" 
+                             Fill="{Binding IsHidConnected, Converter={StaticResource BoolToColorConverter}}" />
+                    <TextBlock Text="HID" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock Text="{Binding VideoResolution}" 
+                           Foreground="#CCCCCC" 
+                           FontSize="12" 
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Mouse capture hint -->
+        <Border VerticalAlignment="Bottom" 
+                HorizontalAlignment="Center"
+                Background="#88000000" 
+                CornerRadius="5"
+                Padding="10,3"
+                Margin="0,0,0,20"
+                IsVisible="{Binding IsMouseCaptured}">
+            <TextBlock Text="Press Ctrl+Alt to release mouse" 
+                       Foreground="#AAAAAA" 
+                       FontSize="11"/>
+        </Border>
+        
+        <!-- Connection status overlay -->
+        <Border Background="#DD111111" 
+                IsVisible="{Binding !IsVideoConnected}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+                <ProgressBar IsIndeterminate="True" Width="200" />
+                <TextBlock Text="{Binding StatusMessage}" 
+                           Foreground="White" 
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

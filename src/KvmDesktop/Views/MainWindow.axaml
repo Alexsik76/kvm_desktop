@@ -7,10 +7,7 @@
         x:Class="KvmDesktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="KVM Desktop Manager"
-        Background="{DynamicResource SystemChromeLowColor}"
-        TransparencyLevelHint="AcrylicBlur"
-        ExtendClientAreaToDecorationsHint="True">
+        Title="KVM Desktop Manager">
 
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,

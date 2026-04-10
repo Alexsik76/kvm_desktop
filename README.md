@@ -1,59 +1,55 @@
-# KVM Desktop Launcher
+# KVM Desktop Client (Thick Client)
 
 ## Project Overview
-KVM Desktop is a specialized cross-platform management application designed to act as a centralized control plane for remote KVM (Keyboard, Video, Mouse) nodes based on Raspberry Pi hardware. The application facilitates secure user authentication, real-time node monitoring, and the orchestrated invocation of high-performance native streaming clients.
+KVM Desktop is a high-performance, cross-platform KVM (Keyboard, Video, Mouse) client application. It provides centralized control for remote Raspberry Pi-based KVM nodes, featuring real-time video streaming, low-latency HID (Human Interface Device) redirection, and secure node management.
 
-## Functional Capabilities
-- **Identity Management:** Secure authentication against a FastAPI backend using OAuth2 Password Flow (JWT).
-- **Session Persistence:** Optional encrypted local storage of user credentials for automated session initialization.
-- **Node Discovery:** Real-time retrieval and visualization of available KVM hardware nodes, including network status and resource endpoints.
-- **Process Orchestration:** Automated lifecycle management of native client processes with secure parameter passing.
-- **Inter-Process Communication (IPC):** Bi-directional communication with native clients via Named Pipes for secure credential transfer and status reporting.
+## Key Features
+- **Integrated Experience:** A unified "thick client" architecture where UI, control logic, and video rendering coexist in a single process.
+- **Low-Latency HID Redirection:** Native mouse and keyboard capture with direct WebSocket transmission to the remote host.
+- **High-Performance Video:** Hardware-accelerated video decoding via a specialized native C++ library (`KVMVideoCodec.dll`).
+- **Secure Authentication:** JWT-based OAuth2 authentication against a FastAPI backend.
+- **Modern UI:** Built with Avalonia UI, offering a responsive, high-DPI aware interface with an integrated status overlay.
 
-## System Architecture
-The application is built using a strict Model-View-ViewModel (MVVM) architectural pattern to ensure separation of concerns and maintainability.
-- **UI Framework:** Avalonia UI (XAML-based cross-platform framework).
-- **Core Runtime:** .NET 10.0.
-- **Dependency Management:** Microsoft Extensions Dependency Injection for inversion of control.
-- **State Management:** Singleton-based session handling for synchronized token propagation across services.
+## System Architecture (New Architecture)
+The application has migrated from a launcher-based model to an integrated in-process architecture:
+
+### 1. C# Core (.NET 10)
+- **UI Framework:** Avalonia UI (MVVM Pattern).
+- **HID Management:** `InputCapturer` handles low-level Windows/Linux input events, converting them to USB HID Usage codes via `AvaloniaEventMapper`.
+- **Networking:** `WebSocketHidClient` manages a persistent, high-speed connection for input transmission using `System.Net.WebSockets`.
+- **Orchestration:** `KvmSessionViewModel` coordinates the lifecycle of both HID and Video components.
+
+### 2. Native Video Engine (C++ DLL)
+- **Library:** `KVMVideoCodec.dll` (P/Invoke integration).
+- **Functionality:** Handles WebRTC/WHEP stream ingestion and H.264 decoding.
+- **Interoperability:** Decoded frames are passed back to C# via a high-speed memory callback (`FrameCallback`) and rendered using `WriteableBitmap`.
+
+### 3. Removed Components
+- **Named Pipes (IPC):** No longer required as all communication happens within a single process memory space.
+- **External Launcher Logic:** The app no longer spawns separate `KVMControlApp.exe` processes.
+
+## Technical Stack
+- **Language:** C# 12 / .NET 10.0.
+- **UI:** Avalonia UI 11.x.
+- **MVVM:** CommunityToolkit.Mvvm.
+- **Native Interop:** P/Invoke (LibraryImport) with Unsafe Blocks for high-speed memory copying.
+- **DI:** Microsoft.Extensions.DependencyInjection.
 
 ## System Requirements
-- **Operating System:** Windows 10/11 (x64), Linux (with X11 or Wayland), or macOS.
-- **Runtime:** .NET 10.0 SDK or Runtime environment.
-- **Network:** Access to the KVM Control Plane API (https://kvm-api.lab.vn.ua).
-- **Native Client:** Compatible `KVMControlApp` binary for the respective platform.
+- **Operating System:** Windows 10/11 (x64), Linux, or macOS.
+- **Runtime:** .NET 10.0 Runtime.
+- **Dependencies:** `KVMVideoCodec.dll` (and its dependencies like FFmpeg/WebRTC) must be present in the application directory.
 
 ## Compilation and Deployment
-To compile the application from the source repository, ensure the .NET 10 SDK is installed and execute the following commands in the project root:
+1. **Prepare Native Assets:** Ensure `KVMVideoCodec.dll` is compiled and available.
+2. **Build C# Project:**
+   ```powershell
+   cd src/KvmDesktop
+   dotnet build -c Release
+   ```
+3. **Execution:** Run `KvmDesktop.exe` (or `dotnet KvmDesktop.dll`).
 
-1. Restore dependencies:
-   `dotnet restore`
-
-2. Build the project in release configuration:
-   `dotnet build -c Release`
-
-3. The compiled binaries will be located in:
-   `src/KvmDesktop/bin/Release/net10.0/`
-
-## Native Client Integration Requirements
-The launcher acts as a supervisor for a native C++ client. For successful integration, the client must adhere to the following specifications:
-
-### Executable Placement
-The launcher expects the native client binary to be located in the same directory as the primary application executable.
-- **Windows:** `KVMControlApp.exe`
-- **Linux:** `KVMControlApp`
-
-### Interaction Interface (IPC)
-Communication is established via Named Pipes to prevent sensitive data exposure in the system process tree.
-- **Execution Argument:** The client is invoked with a single argument: `--pipe <UNIQUE_PIPE_NAME>`.
-- **Pipe Configuration:** The client must connect to the pipe path `\\.\pipe\<UNIQUE_PIPE_NAME>` (on Windows) with `InOut` directionality.
-- **Data Protocol:** Messages are exchanged as UTF-8 encoded, single-line JSON strings terminated by a newline character (`\n`).
-
-### Connection Sequence
-1. The Launcher starts the Pipe Server and executes the Client.
-2. The Client connects to the designated Pipe.
-3. The Launcher transmits a `Handshake` message containing:
-   - `AccessToken`: JWT for API and WebSocket authorization.
-   - `StreamUrl`: Endpoint for WebRTC/WHEP video ingestion.
-   - `HidUrl`: Endpoint for WebSocket HID control proxy.
-4. The Client may subsequently send `StatusUpdate` or `Error` messages back to the Launcher for UI feedback.
+## HID Control Details
+- **Capture Toggle:** Press **F11** to enter/exit "Relative Mouse" mode.
+- **Emergency Release:** Press **Ctrl + Alt** to immediately release mouse and keyboard focus.
+- **Mapping:** Standard US-HID keyboard layout mapping is provided by default.

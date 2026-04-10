@@ -80,89 +80,13 @@ public partial class DashboardViewModel : ViewModelBase
     [RelayCommand]
     private async Task LaunchNodeAsync(KvmNode? node)
     {
-        Console.WriteLine("[DashboardVM] LaunchNodeAsync called.");
         var targetNode = node ?? SelectedNode;
-        if (targetNode == null)
-        {
-            Console.WriteLine("[DashboardVM] No node selected.");
-            return;
-        }
+        if (targetNode == null) return;
 
-        if (_userSession.CurrentUser == null)
-        {
-            Console.WriteLine("[DashboardVM] No user session found.");
-            return;
-        }
+        if (_userSession.CurrentUser == null) return;
 
-        try
-        {
-            string pipeName = $"kvm_pipe_{Guid.NewGuid():N}";
-            Console.WriteLine($"[DashboardVM] Preparing launch for node: {targetNode.Name} with pipe: {pipeName}");
-            
-            // Start the pipe server
-            var startTask = _pipeServerService.StartAsync(pipeName);
-
-            // Launch the external process
-            Console.WriteLine("[DashboardVM] Launching native client...");
-            await _launcherService.LaunchNodeAsync(targetNode, pipeName);
-
-            ClientStatus = "Waiting for client connection...";
-            Console.WriteLine("[DashboardVM] Waiting for client to connect to pipe...");
-
-            // Wait for the client to connect (StartAsync returns when client connects)
-            await startTask;
-            Console.WriteLine("[DashboardVM] Client connected to pipe server.");
-
-            if (_pipeServerService.IsConnected)
-            {
-                ClientStatus = "Connected. Sending handshake...";
-                // ... (решта коду)
-                Console.WriteLine("[DashboardVM] Building and sending handshake...");
-
-                string nodeDomain = "";
-                if (!string.IsNullOrEmpty(targetNode.TunnelUrl))
-                {
-                    if (Uri.TryCreate(targetNode.TunnelUrl, UriKind.Absolute, out Uri tunnelUri))
-                    {
-                        nodeDomain = tunnelUri.Host;
-                    }
-                    else
-                    {
-                        nodeDomain = targetNode.TunnelUrl.Replace("https://", "").Replace("http://", "");
-                    }
-                }
-                else if (!string.IsNullOrEmpty(targetNode.InternalIp))
-                {
-                    nodeDomain = targetNode.InternalIp;
-                }
-
-                string hidUrl = $"wss://{nodeDomain}/ws/control";
-
-                string streamUrl = string.IsNullOrEmpty(targetNode.StreamUrl) 
-                    ? $"https://kvm-api.lab.vn.ua/api/v1/nodes/{targetNode.Id}/signal/offer" 
-                    : targetNode.StreamUrl;
-
-                // Send the sensitive data via the secure pipe
-                var handshake = new HandshakeData
-                {
-                    AccessToken = _userSession.CurrentUser.AccessToken,
-                    StreamUrl = streamUrl,
-                    HidUrl = hidUrl
-                };
-
-                await _pipeServerService.SendAsync(new PipeMessage
-                {
-                    Type = PipeMessageTypes.Handshake,
-                    Payload = handshake
-                });
-
-                ClientStatus = "Handshake sent.";
-            }
-        }
-        catch (Exception ex)
-        {
-            ClientStatus = $"Launch failed: {ex.Message}";
-        }
+        OnNodeLaunched(targetNode);
+        await Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -174,4 +98,7 @@ public partial class DashboardViewModel : ViewModelBase
 
     public event Action? LoggedOut;
     private void OnLoggedOut() => LoggedOut?.Invoke();
+
+    public event Action<KvmNode>? NodeLaunched;
+    private void OnNodeLaunched(KvmNode node) => NodeLaunched?.Invoke(node);
 }
