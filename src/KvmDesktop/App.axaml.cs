@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Avalonia.Markup.Xaml;
 using KvmDesktop.ViewModels;
 using KvmDesktop.Views;
@@ -22,6 +23,14 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        try {
+            var ptr = VideoDecoderNative.KvmGetVersion();
+            var version = Marshal.PtrToStringAnsi(ptr) ?? "unknown";
+            Console.WriteLine($"[KVMVideoCodec] version: {version}");
+        } catch (Exception ex) {
+            Console.WriteLine($"[KVMVideoCodec] version probe failed: {ex.Message}");
+        }
+
         var services = new ServiceCollection();
         ConfigureServices(services);
         Services = services.BuildServiceProvider();

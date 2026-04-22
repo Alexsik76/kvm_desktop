@@ -28,4 +28,47 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <ControlAppDir>$(MSBuildThisFileDirectory)..\..\..\control_app\</ControlAppDir>
+    <NativeBuildDir>$(ControlAppDir)build\</NativeBuildDir>
+    <NativeBinDir>$(NativeBuildDir)$(Configuration)\</NativeBinDir>
+  </PropertyGroup>
+
+  <Target Name="BuildNative" BeforeTargets="Build">
+    <Message Text="Building native layer via build.bat..."
+             Importance="high" />
+    <Exec Command="&quot;$(ControlAppDir)build.bat&quot;"
+          WorkingDirectory="$(ControlAppDir)"
+          ConsoleToMSBuild="true" />
+  </Target>
+
+  <Target Name="CopyNativeDlls" AfterTargets="BuildNative">
+    <ItemGroup>
+      <NativeDll Include="$(NativeBinDir)*.dll" />
+    </ItemGroup>
+    <Message Text="Copying @(NativeDll->Count()) native DLLs to $(OutputPath)"
+             Importance="high" />
+    <Copy SourceFiles="@(NativeDll)"
+          DestinationFolder="$(OutputPath)"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CleanNativeDlls" AfterTargets="Clean">
+    <ItemGroup>
+      <NativeDllsToClean Include="$(OutputPath)KVMVideoCodec.dll;
+                                   $(OutputPath)avcodec-*.dll;
+                                   $(OutputPath)avutil-*.dll;
+                                   $(OutputPath)avformat-*.dll;
+                                   $(OutputPath)swscale-*.dll;
+                                   $(OutputPath)swresample-*.dll;
+                                   $(OutputPath)datachannel.dll;
+                                   $(OutputPath)juice.dll;
+                                   $(OutputPath)srtp2.dll;
+                                   $(OutputPath)libcrypto-*.dll;
+                                   $(OutputPath)libssl-*.dll" />
+    </ItemGroup>
+    <Delete Files="@(NativeDllsToClean)" />
+  </Target>
+
 </Project>

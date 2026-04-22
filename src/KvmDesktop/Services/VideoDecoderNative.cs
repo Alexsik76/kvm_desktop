@@ -17,5 +17,5 @@ public static partial class VideoDecoderNative
     public static extern void KvmStop();
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
-    public static extern int KvmGetFrame(out IntPtr data, out int width, out int height);
+    public static extern IntPtr KvmGetVersion();
 }
