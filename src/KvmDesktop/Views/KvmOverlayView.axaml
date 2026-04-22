@@ -43,7 +43,7 @@
                 Padding="10,3"
                 Margin="0,0,0,20"
                 IsVisible="{Binding IsMouseCaptured}">
-            <TextBlock Text="Press Ctrl+Alt to release mouse" 
+            <TextBlock Text="Press F11 to release mouse"
                        Foreground="#AAAAAA" 
                        FontSize="11"/>
         </Border>

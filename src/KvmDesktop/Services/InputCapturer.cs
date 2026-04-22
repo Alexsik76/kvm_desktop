@@ -25,6 +25,8 @@ public partial class InputCapturer : IInputCapturer
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool SetCursorPos(int x, int y);
 
+    public event EventHandler? CaptureReleased;
+
     public bool IsEnabled
     {
         get => _isEnabled;
@@ -90,7 +92,17 @@ public partial class InputCapturer : IInputCapturer
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
         if (!_isEnabled) return;
-        
+
+        if (e.Key == Key.F11)
+        {
+            _isEnabled = false;
+            _pressedKeys.Clear();
+            UpdateCaptureState();
+            CaptureReleased?.Invoke(this, EventArgs.Empty);
+            e.Handled = true;
+            return;
+        }
+
         if (!_pressedKeys.Contains(e.Key))
         {
             _pressedKeys.Add(e.Key);

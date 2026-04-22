@@ -43,7 +43,8 @@ public partial class KvmSessionViewModel : ViewModelBase
         _hidUrl = hidUrl;
         _token = token;
         Overlay = new KvmOverlayViewModel();
-        
+        _inputCapturer.CaptureReleased += OnCaptureReleased;
+
         // Pin the delegate to prevent GC
         _frameCallback = OnFrameReceived;
     }
@@ -89,11 +90,13 @@ public partial class KvmSessionViewModel : ViewModelBase
     [RelayCommand]
     public async Task StopSessionAsync()
     {
+        _inputCapturer.CaptureReleased -= OnCaptureReleased;
         VideoDecoderNative.KvmStop();
         await _hidClient.DisconnectAsync();
         _inputCapturer.IsEnabled = false;
         Overlay.IsVideoConnected = false;
         Overlay.IsHidConnected = false;
+        Overlay.IsMouseCaptured = false;
     }
 
     [RelayCommand]
@@ -101,6 +104,11 @@ public partial class KvmSessionViewModel : ViewModelBase
     {
         _inputCapturer.IsEnabled = !_inputCapturer.IsEnabled;
         Overlay.IsMouseCaptured = _inputCapturer.IsEnabled;
+    }
+
+    private void OnCaptureReleased(object? sender, EventArgs e)
+    {
+        Overlay.IsMouseCaptured = false;
     }
 
     private void OnFrameReceived(IntPtr data, int width, int height, int stride)

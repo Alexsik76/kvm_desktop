@@ -11,10 +11,8 @@ namespace KvmDesktop.ViewModels;
 public partial class DashboardViewModel : ViewModelBase
 {
     private readonly INodeService _nodeService;
-    private readonly IKvmLauncherService _launcherService;
     private readonly IUserSession _userSession;
     private readonly IAuthService _authService;
-    private readonly IPipeServerService _pipeServerService;
 
     [ObservableProperty]
     private ObservableCollection<KvmNode> _nodes = new();
@@ -29,31 +27,13 @@ public partial class DashboardViewModel : ViewModelBase
     private string? _clientStatus;
 
     public DashboardViewModel(
-        INodeService nodeService, 
-        IKvmLauncherService launcherService, 
+        INodeService nodeService,
         IUserSession userSession,
-        IAuthService authService,
-        IPipeServerService pipeServerService)
+        IAuthService authService)
     {
         _nodeService = nodeService;
-        _launcherService = launcherService;
         _userSession = userSession;
         _authService = authService;
-        _pipeServerService = pipeServerService;
-
-        _pipeServerService.MessageReceived += OnPipeMessageReceived;
-    }
-
-    private void OnPipeMessageReceived(object? sender, PipeMessage e)
-    {
-        if (e.Type == PipeMessageTypes.StatusUpdate)
-        {
-            ClientStatus = e.Payload?.ToString();
-        }
-        else if (e.Type == PipeMessageTypes.Error)
-        {
-            ClientStatus = $"Error: {e.Payload}";
-        }
     }
 
     public string WelcomeMessage => $"Welcome, {_userSession.CurrentUser?.Username ?? "User"}!";
