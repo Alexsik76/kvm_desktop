@@ -68,7 +68,6 @@ public partial class App : Application
 
         // Services
         services.AddSingleton<IHidClient, WebSocketHidClient>();
-        services.AddSingleton<IEventMapper, AvaloniaEventMapper>();
         services.AddSingleton<IInputCapturer, InputCapturer>();
 
         // ViewModels
