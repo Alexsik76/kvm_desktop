@@ -30,6 +30,12 @@ public partial class KvmSessionViewModel : ViewModelBase
     private readonly string _token;
     private readonly VideoDecoderNative.FrameCallback _frameCallback;
 
+    // Metrics state — accessed only from the decoder callback thread
+    private long _frameCount;
+    private DateTime _lastTickTime;
+    private DateTime _lastFrameTime;
+    private double _accumulatedDeltaMs;
+
     public KvmSessionViewModel(
         IHidClient hidClient, 
         IInputCapturer inputCapturer,
@@ -113,6 +119,27 @@ public partial class KvmSessionViewModel : ViewModelBase
 
     private void OnFrameReceived(IntPtr data, int width, int height, int stride)
     {
+        var now = DateTime.UtcNow;
+
+        _frameCount++;
+        if (_lastFrameTime != default)
+            _accumulatedDeltaMs += (now - _lastFrameTime).TotalMilliseconds;
+        _lastFrameTime = now;
+
+        if ((now - _lastTickTime).TotalSeconds >= 1.0)
+        {
+            int fps = (int)_frameCount;
+            double avgInterval = _accumulatedDeltaMs / Math.Max(1, _frameCount);
+            _frameCount = 0;
+            _accumulatedDeltaMs = 0;
+            _lastTickTime = now;
+            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            {
+                Overlay.Fps = fps;
+                Overlay.FrameIntervalMs = avgInterval;
+            });
+        }
+
         // Копіюємо кадр локально, щоб негайно звільнити фоновий потік декодера (C++)
         int bufferSize = height * stride;
         byte[] frameBuffer = System.Buffers.ArrayPool<byte>.Shared.Rent(bufferSize);

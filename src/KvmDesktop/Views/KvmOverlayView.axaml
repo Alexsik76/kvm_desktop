@@ -3,11 +3,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:KvmDesktop.ViewModels"
+             xmlns:converters="using:KvmDesktop.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="KvmDesktop.Views.KvmOverlayView"
              x:DataType="vm:KvmOverlayViewModel"
              IsHitTestVisible="False">
-    
+
+    <UserControl.Resources>
+        <converters:FpsToColorConverter x:Key="FpsToColorConverter"/>
+    </UserControl.Resources>
+
     <Grid>
         <!-- Top bar status info -->
         <Border VerticalAlignment="Top" 
@@ -32,6 +37,41 @@
                            Foreground="#CCCCCC" 
                            FontSize="12" 
                            VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Debug HUD: FPS and Frame interval -->
+        <Border VerticalAlignment="Top"
+                HorizontalAlignment="Right"
+                Background="#AA000000"
+                CornerRadius="0,0,0,8"
+                Padding="10,6"
+                IsVisible="{Binding IsDebugEnabled}">
+            <StackPanel Spacing="2">
+                <StackPanel Orientation="Horizontal" Spacing="0">
+                    <TextBlock Text="FPS:    "
+                               FontFamily="Cascadia Mono,Consolas,monospace"
+                               FontSize="12"
+                               Foreground="#AAAAAA"/>
+                    <TextBlock Text="{Binding Fps}"
+                               FontFamily="Cascadia Mono,Consolas,monospace"
+                               FontSize="12"
+                               Foreground="{Binding Fps, Converter={StaticResource FpsToColorConverter}}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="0">
+                    <TextBlock Text="Frame:  "
+                               FontFamily="Cascadia Mono,Consolas,monospace"
+                               FontSize="12"
+                               Foreground="#AAAAAA"/>
+                    <TextBlock Text="{Binding FrameIntervalMs, StringFormat={}{0:F1}}"
+                               FontFamily="Cascadia Mono,Consolas,monospace"
+                               FontSize="12"
+                               Foreground="#CCCCCC"/>
+                    <TextBlock Text=" ms"
+                               FontFamily="Cascadia Mono,Consolas,monospace"
+                               FontSize="12"
+                               Foreground="#CCCCCC"/>
+                </StackPanel>
             </StackPanel>
         </Border>
 

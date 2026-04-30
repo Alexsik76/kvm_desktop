@@ -49,6 +49,35 @@ The application has migrated from a launcher-based model to an integrated in-pro
    ```
 3. **Execution:** Run `KvmDesktop.exe` (or `dotnet KvmDesktop.dll`).
 
+## Debug HUD (Diagnostics Overlay)
+
+A minimal performance overlay can be activated for debugging and profiling. It displays two real-time metrics updated once per second:
+
+| Metric | Description |
+|--------|-------------|
+| **FPS** | Frames decoded in the last second |
+| **Frame** | Average inter-frame interval (ms), a proxy for decode latency |
+
+FPS is color-coded: **green** ≥ 50, **yellow** 20–49, **red** < 20.
+
+The HUD is rendered as a semi-transparent monospace panel in the top-right corner of the video overlay (`KvmOverlayView`). It is completely invisible in production unless explicitly enabled.
+
+### Activation
+
+```powershell
+# Via environment variable (recommended)
+$env:KVM_DEBUG=1; .\KvmDesktop.exe
+
+# Via CLI argument
+.\KvmDesktop.exe --debug
+```
+
+### Implementation notes
+- Metrics are accumulated on the C++ decoder callback thread (`KvmSessionViewModel.OnFrameReceived`) — no render-thread blocking.
+- UI properties (`Fps`, `FrameIntervalMs`) are pushed to `KvmOverlayViewModel` via `Dispatcher.UIThread.Post`, consistent with the existing double-buffer render pattern.
+- `IsDebugEnabled` is read once in the `KvmOverlayViewModel` constructor; changing the env var at runtime has no effect.
+- Color coding uses `FpsToColorConverter` (`Converters/FpsToColorConverter.cs`), registered as a local `UserControl.Resources` in `KvmOverlayView.axaml`.
+
 ## HID Control Details
 - **Capture Toggle:** Press **F11** to enter/exit "Relative Mouse" mode.
 - **Emergency Release:** Press **Ctrl + Alt** to immediately release mouse and keyboard focus.
