@@ -18,6 +18,12 @@ public partial class InputCapturer : IInputCapturer
     private bool _isFirstMove = true;
     private bool _isInternalMove = false;
 
+    private double _accDx = 0;
+    private double _accDy = 0;
+    private int _accWheel = 0;
+    private byte _lastButtons = 0;
+    private Avalonia.Threading.DispatcherTimer? _flushTimer;
+
     // ── Low-level keyboard hook ──────────────────────────────────────────────
     private IntPtr _hookHandle = IntPtr.Zero;
     private LowLevelKeyboardProc? _hookProc;        // held as a field so GC does not collect the delegate
@@ -84,6 +90,13 @@ public partial class InputCapturer : IInputCapturer
         _control.PointerPressed += OnPointerPressed;
         _control.PointerReleased += OnPointerReleased;
         _control.PointerWheelChanged += OnPointerWheelChanged;
+
+        _flushTimer = new Avalonia.Threading.DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(16) // ~60 Hz
+        };
+        _flushTimer.Tick += OnFlushTick;
+        _flushTimer.Start();
     }
 
     public void Detach()
@@ -94,6 +107,16 @@ public partial class InputCapturer : IInputCapturer
         _control.PointerPressed -= OnPointerPressed;
         _control.PointerReleased -= OnPointerReleased;
         _control.PointerWheelChanged -= OnPointerWheelChanged;
+
+        if (_flushTimer != null)
+        {
+            _flushTimer.Stop();
+            _flushTimer.Tick -= OnFlushTick;
+            _flushTimer = null;
+        }
+        _accDx = 0;
+        _accDy = 0;
+        _accWheel = 0;
 
         _isEnabled = false;
         UpdateCaptureState();
@@ -289,14 +312,44 @@ public partial class InputCapturer : IInputCapturer
         double dx = currentPos.X - _lastPointerPosition.X;
         double dy = currentPos.Y - _lastPointerPosition.Y;
 
-        sbyte hidX = (sbyte)Math.Clamp(dx, -127, 127);
-        sbyte hidY = (sbyte)Math.Clamp(dy, -127, 127);
+        _accDx += dx;
+        _accDy += dy;
+        _lastPointerPosition = currentPos;
 
-        if (hidX != 0 || hidY != 0)
+        _lastButtons = _mouseButtons;
+    }
+
+    private void OnFlushTick(object? sender, EventArgs e)
+    {
+        if (!_isEnabled || _control == null) return;
+
+        if (Math.Abs(_accDx) < 1 && Math.Abs(_accDy) < 1 && _accWheel == 0)
         {
-            _hidClient.EnqueueMouseEvent(_mouseButtons, hidX, hidY, 0);
-            ResetCursorToCenter();
+            return;
         }
+
+        const int MAX_CHUNKS_PER_TICK = 16;
+        int chunks = 0;
+
+        while (chunks < MAX_CHUNKS_PER_TICK &&
+               (Math.Abs(_accDx) >= 1 || Math.Abs(_accDy) >= 1 || _accWheel != 0))
+        {
+            sbyte hidX = (sbyte)Math.Clamp((int)Math.Round(_accDx), -127, 127);
+            sbyte hidY = (sbyte)Math.Clamp((int)Math.Round(_accDy), -127, 127);
+            sbyte hidW = (sbyte)Math.Clamp(_accWheel, -127, 127);
+
+            if (hidX != 0 || hidY != 0 || hidW != 0)
+            {
+                _hidClient.EnqueueMouseEvent(_lastButtons, hidX, hidY, hidW);
+            }
+
+            _accDx -= hidX;
+            _accDy -= hidY;
+            _accWheel -= hidW;
+            chunks++;
+        }
+
+        ResetCursorToCenter();
     }
 
     private unsafe void ResetCursorToCenter()
@@ -347,8 +400,7 @@ public partial class InputCapturer : IInputCapturer
     {
         if (!_isEnabled) return;
 
-        sbyte wheel = (sbyte)Math.Clamp(e.Delta.Y, -127, 127);
-        _hidClient.EnqueueMouseEvent(_mouseButtons, 0, 0, wheel);
+        _accWheel += (int)Math.Clamp(e.Delta.Y, -127, 127);
         e.Handled = true;
     }
 

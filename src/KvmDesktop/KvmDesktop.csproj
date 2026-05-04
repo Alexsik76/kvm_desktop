@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
   </PropertyGroup>
@@ -38,7 +39,7 @@
   <Target Name="BuildNative" BeforeTargets="Build">
     <Message Text="Building native layer via build.bat..."
              Importance="high" />
-    <Exec Command="&quot;$(ControlAppDir)build.bat&quot;"
+    <Exec Command="&quot;$(ControlAppDir)build.bat&quot; $(Configuration)"
           WorkingDirectory="$(ControlAppDir)"
           ConsoleToMSBuild="true" />
   </Target>

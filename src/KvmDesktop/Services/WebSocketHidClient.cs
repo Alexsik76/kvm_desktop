@@ -22,10 +22,12 @@ public class WebSocketHidClient : IHidClient
 
     public WebSocketHidClient()
     {
-        _messageChannel = Channel.CreateUnbounded<string>(new UnboundedChannelOptions
+        _messageChannel = Channel.CreateBounded<string>(new BoundedChannelOptions(64)
         {
+            FullMode = BoundedChannelFullMode.DropOldest,
             SingleReader = true,
-            SingleWriter = false
+            SingleWriter = false,
+            AllowSynchronousContinuations = false
         });
     }
 

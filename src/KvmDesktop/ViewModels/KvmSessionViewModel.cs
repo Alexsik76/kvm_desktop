@@ -160,6 +160,8 @@ public partial class KvmSessionViewModel : ViewModelBase
                 // Вибираємо буфер для запису (той, який зараз НЕ відображається)
                 var targetBitmap = _useBitmap1 ? _bitmap1 : _bitmap2;
 
+                if (targetBitmap is null) return;
+                
                 using (var lockedBitmap = targetBitmap.Lock())
                 {
                     Marshal.Copy(frameBuffer, 0, lockedBitmap.Address, bufferSize);
